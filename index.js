@@ -12,17 +12,19 @@ const pi = Math.PI;
  */
 let ctx;
 
-if (canvas.getContext) {
-  ctx = canvas.getContext("2d");
-  setupCanvas();
-  drawBowl();
+function makeDrawing(noodleWidth) {
+  if (canvas.getContext) {
+    ctx = canvas.getContext("2d");
+    setupCanvas();
+    drawBowl();
 
-  ctx.strokeStyle = "blue";
-  ctx.lineWidth = 5;
-  drawNoodle();
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 1;
+    drawNoodle(noodleWidth);
+  }
 }
 
-function drawNoodle() {
+function drawNoodle(noodleWidth) {
   let minBendRadius = 50;
   let maxBendRadius = 20;
   let maximumNextAngleFactor = 0.5;
@@ -34,24 +36,32 @@ function drawNoodle() {
   let endAngle = Math.random() * 2 * pi;
   let ccw = false;
 
-  for (let i = 0; i < 5; i++) {
-    console.log(`${ccw ? "c" : ""}cw Arc #`, i + 1);
-    console.log(
-      `Radius ${radius}, x ${arcCenterX}, y ${arcCenterY}, i˚ ${
-        startAngle * (180 / pi)
-      }, f˚ ${endAngle * (180 / pi)}`
+  for (let i = 0; i < 3; i++) {
+    // console.log(`${ccw ? "c" : ""}cw Arc #`, i + 1);
+    // console.log(
+    //   `Radius ${radius}, x ${arcCenterX}, y ${arcCenterY}, i˚ ${
+    //     startAngle * (180 / pi)
+    //   }, f˚ ${endAngle * (180 / pi)}`
+    // );
+
+    const outerNoodle = new Path2D();
+    const innerNoodle = new Path2D();
+    outerNoodle.arc(arcCenterX, arcCenterY, radius, startAngle, endAngle, ccw);
+    innerNoodle.arc(
+      arcCenterX,
+      arcCenterY,
+      radius - noodleWidth,
+      startAngle,
+      endAngle,
+      ccw
     );
 
-    const noodle = new Path2D();
+    const nextRadius = Math.max(Math.random() * minBendRadius, maxBendRadius);
 
-    noodle.arc(arcCenterX, arcCenterY, radius, startAngle, endAngle, ccw);
-
-    const newRadius = Math.max(Math.random() * minBendRadius, maxBendRadius);
-
-    const totalRadius = radius + newRadius;
+    const totalRadius = radius + nextRadius;
     arcCenterX += totalRadius * Math.cos(endAngle);
     arcCenterY += totalRadius * Math.sin(endAngle);
-    radius = newRadius;
+    radius = nextRadius + noodleWidth;
 
     let nextEndAngle;
     let nextStartAngle;
@@ -69,7 +79,8 @@ function drawNoodle() {
     endAngle = nextEndAngle;
     ccw = !ccw;
 
-    ctx.stroke(noodle);
+    ctx.stroke(outerNoodle);
+    ctx.stroke(innerNoodle);
   }
 }
 
@@ -104,3 +115,5 @@ function drawBowl() {
 function moveToCenter() {
   ctx.moveTo(canvasCenter.x, canvasCenter.y);
 }
+
+makeDrawing(5);
