@@ -18,6 +18,12 @@ function makeDrawing(width, minLength, maxLength, minBendRadius) {
     ctx = canvas.getContext("2d");
     setupCanvas();
     const bowlRadius = drawBowl();
+    drawNoodles(bowlRadius, width, minLength, maxLength, minBendRadius);
+  }
+}
+
+function drawNoodles(bowlRadius, width, minLength, maxLength, minBendRadius) {
+  for (let i = 0; i <= 500; i++) {
     drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius);
   }
 }
