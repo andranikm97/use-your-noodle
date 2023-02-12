@@ -13,21 +13,20 @@ const bowlLineWidth = 10;
  */
 let ctx;
 
-function makeDrawing(width, minimumLength, maximumLength, minimumBendRadius) {
+function makeDrawing(width, minLength, maxLength, minBendRadius) {
   if (canvas.getContext) {
     ctx = canvas.getContext("2d");
     setupCanvas();
     const bowlRadius = drawBowl();
-    drawNoodle(bowlRadius, width, minimumLength, maximumLength);
+    drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius);
   }
 }
 
-function drawNoodle(bowlRadius, width, minimumLength, maximumLength) {
-  let minBendRadius = 50;
-  let maxBendRadius = 20;
+function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
+  let maxBendRadius = 3 * minBendRadius;
   let maximumNextAngleFactor = 0.5;
 
-  const initialRadius = minBendRadius;
+  const initialRadius = getNextArcRadius(minBendRadius, maxBendRadius);
   let [arcCenterX, arcCenterY, startAngle, endAngle] = getNoodleInitialParams(
     bowlRadius,
     initialRadius
@@ -35,8 +34,7 @@ function drawNoodle(bowlRadius, width, minimumLength, maximumLength) {
 
   let radius = initialRadius;
   let ccw = false;
-  let targetLength =
-    minimumLength + Math.random() * (maximumLength - minimumLength);
+  let targetLength = minLength + Math.random() * (maxLength - minLength);
   let noodleLength = 0;
 
   while (noodleLength < targetLength) {
@@ -76,7 +74,7 @@ function drawNoodle(bowlRadius, width, minimumLength, maximumLength) {
     );
     noodleLength += calcArcLength(radius, startAngle, endAngle);
 
-    const nextRadius = Math.max(Math.random() * minBendRadius, maxBendRadius);
+    const nextRadius = getNextArcRadius(minBendRadius, maxBendRadius);
 
     const totalRadius = radius + nextRadius;
     arcCenterX += totalRadius * Math.cos(endAngle);
@@ -108,6 +106,10 @@ function drawNoodle(bowlRadius, width, minimumLength, maximumLength) {
     ctx.lineWidth = width;
     ctx.stroke(noodleBody);
   }
+}
+
+function getNextArcRadius(minBendRadius, maxBendRadius) {
+  return minBendRadius + Math.random() * (maxBendRadius - minBendRadius);
 }
 
 function calcArcLength(radius, startAngle, endAngle) {
@@ -170,4 +172,4 @@ function moveToCenter() {
   ctx.moveTo(canvasCenter.x, canvasCenter.y);
 }
 
-makeDrawing(5, 200, 1000);
+makeDrawing(5, 200, 1000, 20);
