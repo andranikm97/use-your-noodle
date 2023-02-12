@@ -13,16 +13,16 @@ const bowlLineWidth = 10;
  */
 let ctx;
 
-function makeDrawing(noodleWidth) {
+function makeDrawing(width, minimumLength, maximumLength, minimumBendRadius) {
   if (canvas.getContext) {
     ctx = canvas.getContext("2d");
     setupCanvas();
     const bowlRadius = drawBowl();
-    drawNoodle(bowlRadius, noodleWidth);
+    drawNoodle(bowlRadius, width, minimumLength, maximumLength);
   }
 }
 
-function drawNoodle(bowlRadius, noodleWidth) {
+function drawNoodle(bowlRadius, width, minimumLength, maximumLength) {
   let minBendRadius = 50;
   let maxBendRadius = 20;
   let maximumNextAngleFactor = 0.5;
@@ -35,8 +35,11 @@ function drawNoodle(bowlRadius, noodleWidth) {
 
   let radius = initialRadius;
   let ccw = false;
+  let targetLength =
+    minimumLength + Math.random() * (maximumLength - minimumLength);
+  let noodleLength = 0;
 
-  for (let i = 0; i < 10; i++) {
+  while (noodleLength < targetLength) {
     // console.log(`${ccw ? "c" : ""}cw Arc #`, i + 1);
     // console.log(
     //   `Radius ${radius}, x ${arcCenterX}, y ${arcCenterY}, i˚ ${
@@ -58,7 +61,7 @@ function drawNoodle(bowlRadius, noodleWidth) {
     noodleBody.arc(
       arcCenterX,
       arcCenterY,
-      radius - noodleWidth / 2,
+      radius - width / 2,
       startAngle,
       endAngle,
       ccw
@@ -66,18 +69,19 @@ function drawNoodle(bowlRadius, noodleWidth) {
     innerNoodleBorder.arc(
       arcCenterX,
       arcCenterY,
-      radius - noodleWidth,
+      radius - width,
       startAngle,
       endAngle,
       ccw
     );
+    noodleLength += calcArcLength(radius, startAngle, endAngle);
 
     const nextRadius = Math.max(Math.random() * minBendRadius, maxBendRadius);
 
     const totalRadius = radius + nextRadius;
     arcCenterX += totalRadius * Math.cos(endAngle);
     arcCenterY += totalRadius * Math.sin(endAngle);
-    radius = nextRadius + noodleWidth;
+    radius = nextRadius + width;
 
     let nextEndAngle;
     let nextStartAngle;
@@ -101,9 +105,16 @@ function drawNoodle(bowlRadius, noodleWidth) {
     ctx.stroke(innerNoodleBorder);
 
     ctx.strokeStyle = "white";
-    ctx.lineWidth = noodleWidth;
+    ctx.lineWidth = width;
     ctx.stroke(noodleBody);
   }
+}
+
+function calcArcLength(radius, startAngle, endAngle) {
+  startAngle = radToDeg(startAngle) % 360;
+  endAngle = radToDeg(endAngle) % 360;
+  diffAngle = Math.abs(endAngle - startAngle);
+  return 2 * pi * radius * (diffAngle / 360);
 }
 
 function getNoodleInitialParams(bowlRadius, initialRadius) {
@@ -159,4 +170,4 @@ function moveToCenter() {
   ctx.moveTo(canvasCenter.x, canvasCenter.y);
 }
 
-makeDrawing(5);
+makeDrawing(5, 200, 1000);
