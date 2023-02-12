@@ -6,7 +6,6 @@ const canvasCenter = {
 };
 const pi = Math.PI;
 const bowlLineWidth = 10;
-const noodleLineWidth = 2;
 
 /**
  *
@@ -19,9 +18,6 @@ function makeDrawing(noodleWidth) {
     ctx = canvas.getContext("2d");
     setupCanvas();
     const bowlRadius = drawBowl();
-
-    ctx.strokeStyle = "blue";
-    ctx.lineWidth = noodleLineWidth;
     drawNoodle(bowlRadius, noodleWidth);
   }
 }
@@ -48,10 +44,26 @@ function drawNoodle(bowlRadius, noodleWidth) {
     //   }, f˚ ${endAngle * (180 / pi)}`
     // );
 
-    const outerNoodle = new Path2D();
-    const innerNoodle = new Path2D();
-    outerNoodle.arc(arcCenterX, arcCenterY, radius, startAngle, endAngle, ccw);
-    innerNoodle.arc(
+    const outerNoodleBorder = new Path2D();
+    const innerNoodleBorder = new Path2D();
+    const noodleBody = new Path2D();
+    outerNoodleBorder.arc(
+      arcCenterX,
+      arcCenterY,
+      radius,
+      startAngle,
+      endAngle,
+      ccw
+    );
+    noodleBody.arc(
+      arcCenterX,
+      arcCenterY,
+      radius - noodleWidth / 2,
+      startAngle,
+      endAngle,
+      ccw
+    );
+    innerNoodleBorder.arc(
       arcCenterX,
       arcCenterY,
       radius - noodleWidth,
@@ -83,8 +95,14 @@ function drawNoodle(bowlRadius, noodleWidth) {
     endAngle = nextEndAngle;
     ccw = !ccw;
 
-    ctx.stroke(outerNoodle);
-    ctx.stroke(innerNoodle);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.stroke(outerNoodleBorder);
+    ctx.stroke(innerNoodleBorder);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = noodleWidth;
+    ctx.stroke(noodleBody);
   }
 }
 
