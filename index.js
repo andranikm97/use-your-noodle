@@ -30,12 +30,12 @@ function drawNoodle() {
   let arcCenterX = canvasCenter.x;
   let arcCenterY = canvasCenter.y;
   let radius = minBendRadius;
-  let startAngle = 0;
-  let endAngle = 0.25 * pi;
-  let ccw = true;
+  let startAngle = Math.random() * 2 * pi;
+  let endAngle = Math.random() * 2 * pi;
+  let ccw = false;
 
-  for (let i = 0; i < 2; i++) {
-    console.log("Arc #", i + 1);
+  for (let i = 0; i < 5; i++) {
+    console.log(`${ccw ? "c" : ""}cw Arc #`, i + 1);
     console.log(
       `Radius ${radius}, x ${arcCenterX}, y ${arcCenterY}, i˚ ${
         startAngle * (180 / pi)
@@ -49,18 +49,20 @@ function drawNoodle() {
     const newRadius = Math.max(Math.random() * minBendRadius, maxBendRadius);
 
     const totalRadius = radius + newRadius;
-    arcCenterX += totalRadius * Math.cos(endAngle - startAngle);
-    arcCenterY += totalRadius * Math.sin(endAngle - startAngle);
+    arcCenterX += totalRadius * Math.cos(endAngle);
+    arcCenterY += totalRadius * Math.sin(endAngle);
     radius = newRadius;
 
     let nextEndAngle;
     let nextStartAngle;
     if (!ccw) {
       nextStartAngle = 2 * pi - (pi - endAngle);
-      nextEndAngle = nextStartAngle - maximumNextAngleFactor * 2 * pi;
+      nextEndAngle =
+        nextStartAngle - Math.random() * maximumNextAngleFactor * 2 * pi;
     } else {
       nextStartAngle = pi - (2 * pi - endAngle);
-      nextEndAngle = nextStartAngle + maximumNextAngleFactor * 2 * pi;
+      nextEndAngle =
+        nextStartAngle + Math.random() * maximumNextAngleFactor * 2 * pi;
     }
 
     startAngle = nextStartAngle;
