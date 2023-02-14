@@ -6,6 +6,7 @@ const canvasCenter = {
 };
 const pi = Math.PI;
 const bowlLineWidth = 10;
+const bowlColour = "black";
 
 /**
  *
@@ -65,21 +66,12 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
     ) {
       if (nextRadius > minBendRadius) {
         nextRadius = 0.9 * nextRadius;
-        [nextArcCenterX, nextArcCenterY] = getNextArcCoords(
-          arcCenterX,
-          arcCenterY,
-          radius,
-          nextRadius,
-          endAngle,
-          width
-        );
-        continue;
-      }
-
-      if (ccw) {
-        endAngle -= degToRad(10);
       } else {
-        endAngle += degToRad(10);
+        if (ccw) {
+          endAngle -= degToRad(10);
+        } else {
+          endAngle += degToRad(10);
+        }
       }
 
       [nextArcCenterX, nextArcCenterY] = getNextArcCoords(
@@ -122,12 +114,12 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
       ccw
     );
 
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = noodleBorderColour;
     ctx.lineWidth = 1;
     ctx.stroke(outerNoodleBorder);
     ctx.stroke(innerNoodleBorder);
 
-    ctx.strokeStyle = "white";
+    ctx.strokeStyle = noodleColour;
     ctx.lineWidth = width;
     ctx.stroke(noodleBody);
 
@@ -227,7 +219,7 @@ function setupCanvas() {
 function drawBowl() {
   const bowlRadius = (0.95 * canvasSize) / 2;
 
-  ctx.strokeStyle = "black";
+  ctx.strokeStyle = bowlColour;
   ctx.lineWidth = bowlLineWidth;
   ctx.beginPath();
   ctx.arc(canvasCenter.x, canvasCenter.y, bowlRadius, 0, 360);
@@ -240,4 +232,10 @@ function moveToCenter() {
   ctx.moveTo(canvasCenter.x, canvasCenter.y);
 }
 
-makeDrawing(5, 200, 1000, 20);
+const noodleColour = "#FCE4B1";
+const noodleBorderColour = "black";
+const noodleWidth = 10;
+const noodleMinLength = 200;
+const noodleMaxLength = 1000;
+const noodleMinBendRadius = 20;
+makeDrawing(noodleWidth, noodleMinLength, noodleMaxLength, noodleMinBendRadius);
