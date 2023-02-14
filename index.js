@@ -23,14 +23,13 @@ function makeDrawing(width, minLength, maxLength, minBendRadius) {
 }
 
 function drawNoodles(bowlRadius, width, minLength, maxLength, minBendRadius) {
-  for (let i = 0; i <= 500; i++) {
+  for (let i = 0; i < 500; i++) {
     drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius);
   }
 }
 
 function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
   let maxBendRadius = 3 * minBendRadius;
-  let maximumNextAngleFactor = 0.5;
 
   const initialRadius = getNextArcRadius(minBendRadius, maxBendRadius);
   let [arcCenterX, arcCenterY, startAngle, endAngle] = getNoodleInitialParams(
@@ -44,12 +43,56 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
   let noodleLength = 0;
 
   while (noodleLength < targetLength) {
-    // console.log(`${ccw ? "c" : ""}cw Arc #`, i + 1);
-    // console.log(
-    //   `Radius ${radius}, x ${arcCenterX}, y ${arcCenterY}, i˚ ${
-    //     startAngle * (180 / pi)
-    //   }, f˚ ${endAngle * (180 / pi)}`
-    // );
+    noodleLength += calcArcLength(radius, startAngle, endAngle);
+
+    let nextRadius = getNextArcRadius(minBendRadius, maxBendRadius) + width;
+    let [nextArcCenterX, nextArcCenterY] = getNextArcCoords(
+      arcCenterX,
+      arcCenterY,
+      radius,
+      nextRadius,
+      endAngle,
+      width
+    );
+
+    while (
+      !checkNextArcInsideBowl(
+        bowlRadius,
+        nextRadius,
+        nextArcCenterX,
+        nextArcCenterY
+      )
+    ) {
+      if (nextRadius > minBendRadius) {
+        nextRadius = 0.9 * nextRadius;
+        [nextArcCenterX, nextArcCenterY] = getNextArcCoords(
+          arcCenterX,
+          arcCenterY,
+          radius,
+          nextRadius,
+          endAngle,
+          width
+        );
+        continue;
+      }
+
+      if (ccw) {
+        endAngle -= degToRad(10);
+      } else {
+        endAngle += degToRad(10);
+      }
+
+      [nextArcCenterX, nextArcCenterY] = getNextArcCoords(
+        arcCenterX,
+        arcCenterY,
+        radius,
+        nextRadius,
+        endAngle,
+        width
+      );
+    }
+
+    const [nextStartAngle, nextEndAngle] = getNextArcAngles(ccw, endAngle);
 
     const outerNoodleBorder = new Path2D();
     const innerNoodleBorder = new Path2D();
@@ -78,30 +121,6 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
       endAngle,
       ccw
     );
-    noodleLength += calcArcLength(radius, startAngle, endAngle);
-
-    const nextRadius = getNextArcRadius(minBendRadius, maxBendRadius);
-
-    const totalRadius = radius + nextRadius;
-    arcCenterX += totalRadius * Math.cos(endAngle);
-    arcCenterY += totalRadius * Math.sin(endAngle);
-    radius = nextRadius + width;
-
-    let nextEndAngle;
-    let nextStartAngle;
-    if (!ccw) {
-      nextStartAngle = 2 * pi - (pi - endAngle);
-      nextEndAngle =
-        nextStartAngle - Math.random() * maximumNextAngleFactor * 2 * pi;
-    } else {
-      nextStartAngle = pi - (2 * pi - endAngle);
-      nextEndAngle =
-        nextStartAngle + Math.random() * maximumNextAngleFactor * 2 * pi;
-    }
-
-    startAngle = nextStartAngle;
-    endAngle = nextEndAngle;
-    ccw = !ccw;
 
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
@@ -111,7 +130,50 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
     ctx.strokeStyle = "white";
     ctx.lineWidth = width;
     ctx.stroke(noodleBody);
+
+    radius = nextRadius;
+    arcCenterX = nextArcCenterX;
+    arcCenterY = nextArcCenterY;
+    startAngle = nextStartAngle;
+    endAngle = nextEndAngle;
+    ccw = !ccw;
   }
+}
+
+function getNextArcAngles(currentArcIsccw, currentArcEndAngle) {
+  let maximumNextAngleFactor = 0.5;
+  const nextStartAngle = (currentArcIsccw ? 1 : -1) * pi + currentArcEndAngle;
+  const nextEndAngle =
+    nextStartAngle +
+    (currentArcIsccw ? 1 : -1) *
+      Math.random() *
+      maximumNextAngleFactor *
+      2 *
+      pi;
+  return [nextStartAngle, nextEndAngle];
+}
+
+function getNextArcCoords(
+  currentArcCenterX,
+  currentArcCenterY,
+  currentArcRadius,
+  nextArcRadius,
+  currentArcEndAngle,
+  noodleWidth
+) {
+  const totalRadius = currentArcRadius + nextArcRadius - noodleWidth;
+  return [
+    currentArcCenterX + totalRadius * Math.cos(currentArcEndAngle),
+    currentArcCenterY + totalRadius * Math.sin(currentArcEndAngle),
+  ];
+}
+
+function checkNextArcInsideBowl(bowlRadius, arcRadius, arcCenterX, arcCenterY) {
+  const distToOrigin = Math.sqrt(
+    Math.pow(arcCenterX - canvasCenter.x, 2) +
+      Math.pow(arcCenterY - canvasCenter.y, 2)
+  );
+  return distToOrigin + arcRadius <= bowlRadius - bowlLineWidth;
 }
 
 function getNextArcRadius(minBendRadius, maxBendRadius) {
