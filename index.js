@@ -24,8 +24,20 @@ function makeDrawing(width, minLength, maxLength, minBendRadius) {
 }
 
 function drawNoodles(bowlRadius, width, minLength, maxLength, minBendRadius) {
-  for (let i = 0; i < 500; i++) {
-    drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius);
+  for (let i = 0; i < 1; i++) {
+    const pointsDrawn = drawNoodle(
+      bowlRadius,
+      width,
+      minLength,
+      maxLength,
+      minBendRadius
+    );
+    console.log("Area of circle:", pi * bowlRadius * bowlRadius);
+    console.log("Area occupied by noodles", pointsDrawn.length);
+    console.log(
+      "Proportion",
+      (pointsDrawn.length / (pi * bowlRadius * bowlRadius)) * 100
+    );
   }
 }
 
@@ -42,6 +54,7 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
   let ccw = false;
   let targetLength = minLength + Math.random() * (maxLength - minLength);
   let noodleLength = 0;
+  const pointsDrawn = [];
 
   while (noodleLength < targetLength) {
     noodleLength += calcArcLength(radius, startAngle, endAngle);
@@ -114,14 +127,25 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
       ccw
     );
 
+    pointsDrawn.push(
+      ...getArcPointsDrawn(
+        ccw,
+        arcCenterX,
+        arcCenterY,
+        radius,
+        startAngle,
+        endAngle
+      )
+    );
+
     ctx.strokeStyle = noodleBorderColour;
     ctx.lineWidth = 1;
     ctx.stroke(outerNoodleBorder);
     ctx.stroke(innerNoodleBorder);
 
-    ctx.strokeStyle = noodleColour;
-    ctx.lineWidth = width;
-    ctx.stroke(noodleBody);
+    // ctx.strokeStyle = noodleColour;
+    // ctx.lineWidth = width;
+    // ctx.stroke(noodleBody);
 
     radius = nextRadius;
     arcCenterX = nextArcCenterX;
@@ -130,19 +154,60 @@ function drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius) {
     endAngle = nextEndAngle;
     ccw = !ccw;
   }
+
+  return unique(pointsDrawn);
+}
+
+function unique(arr) {
+  return [...new Set(arr)];
+}
+
+function getArcPointsDrawn(
+  ccw,
+  centerX,
+  centerY,
+  radius,
+  startAngle,
+  endAngle
+) {
+  let currentAngle = startAngle;
+  let pointsDrawn = [];
+
+  if (ccw) {
+    while (currentAngle > endAngle) {
+      let xDrawn = Math.round(centerX + radius * Math.cos(currentAngle));
+      let yDrawn = Math.round(centerY + radius * Math.sin(currentAngle));
+      pointsDrawn.push(`${xDrawn}.${yDrawn}`);
+      currentAngle -= degToRad(1);
+    }
+  } else {
+    while (currentAngle < endAngle) {
+      let xDrawn = Math.round(centerX + radius * Math.cos(currentAngle));
+      let yDrawn = Math.round(centerY + radius * Math.sin(currentAngle));
+      pointsDrawn.push(`${xDrawn}.${yDrawn}`);
+      currentAngle += degToRad(1);
+    }
+  }
+
+  return unique(pointsDrawn);
 }
 
 function getNextArcAngles(currentArcIsccw, currentArcEndAngle) {
   let maximumNextAngleFactor = 0.5;
-  const nextStartAngle = (currentArcIsccw ? 1 : -1) * pi + currentArcEndAngle;
+  const nextStartAngle =
+    ((currentArcIsccw ? 1 : -1) * pi + currentArcEndAngle) % (2 * pi);
   const nextEndAngle =
-    nextStartAngle +
-    (currentArcIsccw ? 1 : -1) *
-      Math.random() *
-      maximumNextAngleFactor *
-      2 *
-      pi;
-  return [nextStartAngle, nextEndAngle];
+    (nextStartAngle +
+      (currentArcIsccw ? 1 : -1) *
+        Math.random() *
+        maximumNextAngleFactor *
+        2 *
+        pi) %
+    (2 * pi);
+  return [
+    nextStartAngle <= 0 ? 2 * pi + nextStartAngle : nextStartAngle,
+    nextEndAngle <= 0 ? 2 * pi + nextEndAngle : nextEndAngle,
+  ];
 }
 
 function getNextArcCoords(
