@@ -15,6 +15,14 @@ const bowlColour = "black";
 let ctx;
 
 function makeDrawing(width, minLength, maxLength, minBendRadius) {
+  if (width >= minBendRadius) {
+    document.body.removeChild(canvas);
+    const text = document.createElement("h1");
+    text.innerText =
+      "Noodle width must be smaller than the minimum bend radius.";
+    document.body.appendChild(text);
+    return;
+  }
   if (canvas.getContext) {
     ctx = canvas.getContext("2d");
     setupCanvas();
@@ -24,7 +32,10 @@ function makeDrawing(width, minLength, maxLength, minBendRadius) {
 }
 
 function drawNoodles(bowlRadius, width, minLength, maxLength, minBendRadius) {
-  for (let i = 0; i < 500; i++) {
+  const circleArea = pi * Math.pow(bowlRadius, 2);
+  const limit =
+    (3 * circleArea * (maxLength / minLength)) / (minLength * width);
+  for (let i = 0; i < limit; i++) {
     drawNoodle(bowlRadius, width, minLength, maxLength, minBendRadius);
   }
 }
@@ -235,7 +246,7 @@ function moveToCenter() {
 const noodleColour = "#FCE4B1";
 const noodleBorderColour = "black";
 const noodleWidth = 10;
-const noodleMinLength = 200;
-const noodleMaxLength = 1000;
 const noodleMinBendRadius = 20;
+const noodleMinLength = 500;
+const noodleMaxLength = 1000;
 makeDrawing(noodleWidth, noodleMinLength, noodleMaxLength, noodleMinBendRadius);
